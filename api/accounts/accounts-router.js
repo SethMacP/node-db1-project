@@ -1,61 +1,63 @@
 const router = require('express').Router();
 const model = require('./accounts-model');
 const {checkAccountId, checkAccountPayload, checkAccountNameUnique} = require('./accounts-middleware');
-const { resource } = require('../server');
 
 router.get('/', async (req, res, next) => {
 	// DO YOUR MAGIC
-	model.getAll()
-		.then(accounts=>{
-			res.status(200).json(accounts)
-		})
-		.catch(()=>{
-			res.status(500).json({message:"Server Error"})
-		})
+	try{
+		const accounts = await model.getAll();
+		res.status(200).json(accounts);
+	}catch(err){
+		next(err)
+	}
 })
 
-router.get('/:id',  (req, res, next) => {
-	model.getById(req.params.id)
-		.then(account=>{
-			res.status(200).json(account)
-		})
-		.catch(()=>{
-			res.status(500).json({message:"Server Error"})
-		})
-})
+router.get('/:id', checkAccountId(), async (req, res, next) => {
+	try{
+		const account = await model.getById(req.params.id)
+		// console.log(account)	
+		res.status(200).json(account)
+		
+	}catch(err){
+		next(err);	
+		}
+	});
 
-router.post('/', (req, res, next) => {
+router.post('/', checkAccountPayload(),  checkAccountNameUnique(),async(req, res, next) => {
 	// DO YOUR MAGIC
-	console.log(req.body);
-	model.create(req.body)
-		.then(post=>{
-			res.status(200).json(post)
-		})
-		.catch(()=>{
-			res.status(500).json({message: "Server Error"})
-		})
+	// console.log('router:   ', req.body);
+	try{
+		const post = await model.create(req.body);
+		// console.log('try')
+		res.status(201).json(post)
+	}catch(err){
+		// console.log('err')
+		next(err)
+	}
 })
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id',checkAccountPayload(), checkAccountId(),  async(req, res, next) => {
 	// DO YOUR MAGIC
-	model.updateById(req.params.id, req.body)
-		.then(updatedPost => {
-			res.status(200).json(updatedPost)
-		})
-		.catch(()=>{
-			res.status(500).json({message:"Server Error"})
-		})
+	try{
+		const updateAccount = await model.updateById(req.params.id, req.body)
+		res.status(200).json(updateAccount)
+	}catch(err){
+		next(err);
+	}
+
+
+
 });
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', checkAccountId(), async (req, res, next) => {
 	// DO YOUR MAGIC
-	model.deleteById(req.params.id)
-		.then(()=>{
-			res.status(200).json({message:"Deleted"})
-		})
-		.catch(()=>{
-			res.status(500).json({message:"Server Error"})
-		})
+	try{
+		const deletePost = await model.deleteById(req.params.id)
+		res.status(200).json({message: "Deleted"})
+	}catch(err){
+		next(err);
+	}
+	
 })
 
 router.use((err, req, res, next) => { // eslint-disable-line

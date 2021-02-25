@@ -11,11 +11,13 @@ const getAll = async ()=> {
 
 const getById = async (id) => {
   // DO YOUR MAGIC
-  const data = await db("Accounts")
-  	.select("*")
-	.where("id", id)
-	.limit(1)
-	return data
+ return db('accounts').where('id', id).first() 
+ 
+//   const data = await db("Accounts")
+//   .select("*")
+// 	.where("id", id)
+// 	.limit(1)
+// 	return data
 }
 
 const create = async (account) => {
@@ -47,7 +49,7 @@ const updateById = async (id, account) => {
 		.select("*")
 		.from("accounts")
 		.where("id", id)
-		.limit(1)
+		.first();
 	return updatedAccount;
 }
 
